@@ -31,6 +31,9 @@ Reload, Import, Download, and Save actions.
 - **Safe boundaries** — row count and dimensions are clamped, duplicate headers
   are made unique, typed write-back failures are counted, and read-only values
   are skipped.
+- **Validated regional settings** — IronCalc locales are normalized to its
+  supported `en`, `en-GB`, `fr`, `de`, `it`, or `es` values, while invalid time
+  zones safely fall back to UTC.
 
 ## Baseline
 
@@ -99,6 +102,11 @@ microflow or nanoflow that matches your application's transaction policy.
    status line reports updated, skipped, and failed counts.
 7. The optional After save action runs after write-back and workbook-state
    persistence have completed.
+
+When a persisted workbook is restored while Rows and Columns are configured,
+the current datasource mapping remains active. This lets users continue editing
+the restored workbook and explicitly write mapped non-formula cells back to
+Mendix. Imported `.ic` files intentionally have no automatic row mapping.
 
 ## Project structure
 

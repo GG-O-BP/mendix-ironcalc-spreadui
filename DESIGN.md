@@ -41,4 +41,6 @@ This document records the behaviors that the implementation and regression tests
 - WASM, datasource conversion, import, download, and persistence errors become visible state.
 - A failed action never reports success.
 - Import cancellation reports a non-destructive error and Reload remains available.
+- A restored workbook retains the current datasource row/column mapping so
+  explicit Save can still write editable cells back to Mendix.
 - No secret, workbook content, or datasource value is logged.

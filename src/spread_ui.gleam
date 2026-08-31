@@ -162,33 +162,45 @@ pub fn update(
         Loading(_, _, _) -> #(model, effect.none())
         Failed(_, _, _) -> #(model, effect.none())
       }
-    Import -> {
-      let #(config, props) = context(model)
-      #(
-        Loading(
-          config: config,
-          props: props,
-          message: "Choose an IronCalc .ic workbook to import…",
-        ),
-        import_effect(config),
-      )
-    }
-    WorkbookImported(Ok(workbook)) -> {
-      let #(config, props) = context(model)
-      #(
-        ready(
-          config,
-          props,
-          workbook,
-          "Imported workbook ready. Press Save to persist it to Mendix.",
-        ),
-        effect.none(),
-      )
-    }
-    WorkbookImported(Error(reason)) -> {
-      let #(config, props) = context(model)
-      #(Failed(config: config, props: props, reason: reason), effect.none())
-    }
+    Import ->
+      case model {
+        Ready(config, props, workbook, _, False) -> #(
+          Ready(
+            config: config,
+            props: props,
+            workbook: workbook,
+            notice: "Choose an IronCalc .ic workbook to import…",
+            busy: True,
+          ),
+          import_effect(config),
+        )
+        Ready(_, _, _, _, True) -> #(model, effect.none())
+        Loading(_, _, _) -> #(model, effect.none())
+        Failed(_, _, _) -> #(model, effect.none())
+      }
+    WorkbookImported(Ok(workbook)) ->
+      case model {
+        Ready(config, props, _, _, _) -> #(
+          ready(
+            config,
+            props,
+            workbook,
+            "Imported workbook ready. Press Save to persist it to Mendix.",
+          ),
+          effect.none(),
+        )
+        Loading(_, _, _) -> #(model, effect.none())
+        Failed(_, _, _) -> #(model, effect.none())
+      }
+    WorkbookImported(Error(reason)) ->
+      case model {
+        Ready(config, props, workbook, _, _) -> #(
+          ready(config, props, workbook, "Import not applied: " <> reason),
+          effect.none(),
+        )
+        Loading(_, _, _) -> #(model, effect.none())
+        Failed(_, _, _) -> #(model, effect.none())
+      }
   }
 }
 

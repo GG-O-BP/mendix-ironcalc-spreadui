@@ -24,6 +24,8 @@ SpreadUI는 단순히 시트를 보여주는 데서 끝나지 않는다. 실제 
   평가한다.
 - **안전한 저장**: 읽기 전용·미사용·변경 없음 값은 건너뛰고, 타입 변환 실패는
   성공한 변경과 분리하여 개수로 보여준다.
+- **검증된 지역 설정**: IronCalc가 지원하는 `en`, `en-GB`, `fr`, `de`, `it`,
+  `es`로 locale을 정규화하고 잘못된 timezone은 UTC로 안전하게 대체한다.
 - **반응형 SpreadUI**: light/dark/system 테마, 키보드 포커스, 상태 알림,
   reduced-motion, 모바일 버튼 레이아웃을 제공한다.
 
@@ -79,6 +81,11 @@ microflow 또는 nanoflow를 After save에 연결하는 방식을 권장한다.
 5. 수식 열은 계산하지만 Mendix attribute로 write-back하지 않는다.
 6. 개별 셀 변환 실패가 다른 성공 저장을 취소하지 않는다.
 7. After save는 attribute와 워크북 상태 처리가 끝난 뒤 실행된다.
+
+저장된 워크북을 복원할 때 Rows와 Columns가 설정되어 있으면 현재 datasource
+매핑도 함께 유지된다. 따라서 복원된 워크북을 계속 편집한 뒤 일반 셀을 Mendix에
+명시적으로 저장할 수 있다. 외부에서 가져온 `.ic` 파일에는 자동 행 매핑을
+적용하지 않는다.
 
 ## 라이선스
 

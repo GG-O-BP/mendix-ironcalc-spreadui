@@ -1,7 +1,7 @@
 {
   "name": "mendix-ironcalc-spreadui",
   "widgetName": "MendixIronCalc",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Practical IronCalc spreadsheet widget for Mendix, built with Glendix 5.2.0",
   "copyright": "© 2026 GG-O-BP and contributors.",
   "author": "GG-O-BP",

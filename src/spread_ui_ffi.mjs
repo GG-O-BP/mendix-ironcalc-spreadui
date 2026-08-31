@@ -11,6 +11,8 @@ const DEFAULT_SAMPLE = [
   ["Total", "", "", "=SUM(D2:D4)", "", "=SUM(F2:F4)"],
 ];
 
+const IRONCALC_LOCALES = new Set(["de", "en", "en-GB", "es", "fr", "it"]);
+
 function ensureInitialized() {
   initialization ??= import("@ironcalc/workbook").then(async module => {
     ironCalcModule = module;
@@ -40,6 +42,23 @@ function asInteger(value, fallback, minimum, maximum) {
   const number = Number(value);
   if (!Number.isFinite(number)) return fallback;
   return Math.min(maximum, Math.max(minimum, Math.trunc(number)));
+}
+
+function normalizeLocale(value) {
+  const requested = asString(value, "en").replace("_", "-");
+  if (IRONCALC_LOCALES.has(requested)) return requested;
+  const language = requested.split("-")[0].toLowerCase();
+  return IRONCALC_LOCALES.has(language) ? language : "en";
+}
+
+function normalizeTimezone(value) {
+  const requested = asString(value, "UTC");
+  try {
+    new Intl.DateTimeFormat("en", { timeZone: requested }).format();
+    return requested;
+  } catch {
+    return "UTC";
+  }
 }
 
 function expressionValue(value, fallback) {
@@ -89,8 +108,8 @@ export function read_config(props) {
     readOnly: asBoolean(props?.readOnly, false),
     workbookName: asString(props?.workbookName, "Mendix Workbook"),
     sheetName: asString(props?.sheetName, "Mendix Data"),
-    locale: asString(props?.locale, "en-US"),
-    timezone: asString(props?.timezone, "UTC"),
+    locale: normalizeLocale(props?.locale),
+    timezone: normalizeTimezone(props?.timezone),
     emptyMode: props?.emptyMode === "empty" ? "empty" : "sample",
     maxRows: asInteger(props?.maxRows, 1000, 1, 10000),
     columns: normalizeColumns(props?.columns),
@@ -212,7 +231,7 @@ function createModel(config) {
   const language = config.locale.split(/[-_]/)[0] || "en";
   const model = new ironCalcModule.Model(
     config.workbookName,
-    language,
+    config.locale,
     config.timezone,
     language,
   );
@@ -294,7 +313,19 @@ export function load_workbook(props, config, onSuccess, onFailure) {
       if (serialized !== "") {
         try {
           const model = restoreModel(serialized, config);
-          onSuccess(loaded(model, "saved", 0, 0, ""));
+          const items = datasourceItems(props, config.maxRows);
+          const columns = items.length > 0 ? config.columns : [];
+          onSuccess(
+            loaded(
+              model,
+              "saved",
+              items.length,
+              columns.length,
+              "",
+              items,
+              columns,
+            ),
+          );
           return;
         } catch (error) {
           const reason = error instanceof Error ? error.message : String(error);
@@ -390,7 +421,11 @@ function saveState(props, workbook) {
 }
 
 function writeBack(workbook, readOnly) {
-  if (readOnly || workbook.source !== "mendix") {
+  if (
+    readOnly ||
+    workbook.items.length === 0 ||
+    workbook.columns.length === 0
+  ) {
     return { updatedCount: 0, skippedCount: 0, failedCount: 0 };
   }
   let updatedCount = 0;
@@ -480,13 +515,23 @@ export function import_workbook(config, onSuccess, onFailure) {
   input.type = "file";
   input.accept = ".ic,application/vnd.ironcalc.workbook";
   input.style.display = "none";
+  let settled = false;
   const cleanup = () => input.remove();
+  const succeed = workbook => {
+    if (settled) return;
+    settled = true;
+    cleanup();
+    onSuccess(workbook);
+  };
+  const fail = reason => {
+    if (settled) return;
+    settled = true;
+    cleanup();
+    onFailure(reason);
+  };
   input.addEventListener(
     "cancel",
-    () => {
-      onFailure("No workbook was selected.");
-      cleanup();
-    },
+    () => fail("No workbook was selected."),
     { once: true },
   );
   input.addEventListener(
@@ -495,24 +540,35 @@ export function import_workbook(config, onSuccess, onFailure) {
       try {
         const file = input.files?.[0];
         if (!file) {
-          onFailure("No workbook was selected.");
+          fail("No workbook was selected.");
           return;
         }
         await ensureInitialized();
         const language = config.locale.split(/[-_]/)[0] || "en";
         const factory = ironCalcModule.Model.from_bytes ?? ironCalcModule.Model.fromBytes;
-        const model = factory.call(Model, new Uint8Array(await file.arrayBuffer()), language);
-        onSuccess(loaded(model, "imported", 0, 0, ""));
+        if (typeof factory !== "function") {
+          throw new Error(
+            "This IronCalc build does not expose workbook deserialization.",
+          );
+        }
+        const model = factory.call(
+          ironCalcModule.Model,
+          new Uint8Array(await file.arrayBuffer()),
+          language,
+        );
+        succeed(loaded(model, "imported", 0, 0, ""));
       } catch (error) {
-        onFailure(error instanceof Error ? error.message : String(error));
-      } finally {
-        cleanup();
+        fail(error instanceof Error ? error.message : String(error));
       }
     },
     { once: true },
   );
-  document.body.appendChild(input);
-  input.click();
+  try {
+    document.body.appendChild(input);
+    input.click();
+  } catch (error) {
+    fail(error instanceof Error ? error.message : String(error));
+  }
 }
 
 export const loaded_model = workbook => workbook.model;
@@ -530,7 +586,9 @@ export const __test = {
   convertForEditable,
   formulaForRow,
   mendixTable,
+  normalizeLocale,
   normalizeColumns,
+  normalizeTimezone,
   safeFilename,
   sameValue,
   uniqueHeaders,

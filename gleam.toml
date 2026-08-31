@@ -1,5 +1,5 @@
 name = "mendix_ironcalc_spreadui"
-version = "1.0.0"
+version = "1.0.1"
 gleam = ">= 1.17.0"
 target = "javascript"
 description = "Practical IronCalc spreadsheet widget for Mendix, built with Glendix"

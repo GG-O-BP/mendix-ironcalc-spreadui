@@ -105,9 +105,9 @@
                 <caption>Sheet name</caption>
                 <description>Name of the initial data sheet.</description>
             </property>
-            <property key="locale" type="string" required="true" defaultValue="en-US">
+            <property key="locale" type="string" required="true" defaultValue="en">
                 <caption>Locale</caption>
-                <description>IronCalc locale, such as en-US or ko-KR.</description>
+                <description>IronCalc locale. Supported values are en, en-GB, fr, de, it, and es; regional variants fall back to their supported language.</description>
             </property>
             <property key="timezone" type="string" required="true" defaultValue="UTC">
                 <caption>Time zone</caption>

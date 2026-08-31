@@ -1,5 +1,9 @@
 import { describe, expect, test } from "bun:test";
-import { __test, read_config } from "../src/spread_ui_ffi.mjs";
+import {
+  __test,
+  import_workbook,
+  read_config,
+} from "../src/spread_ui_ffi.mjs";
 
 describe("SpreadUI runtime boundary", () => {
   test("configuration defaults and clamps boundary values", () => {
@@ -17,6 +21,14 @@ describe("SpreadUI runtime boundary", () => {
     expect(config.theme).toBe("light");
     expect(config.columns[0].header).toBe("Column 1");
     expect(config.columns[0].width).toBe(60);
+  });
+
+  test("unsupported locale and timezone settings fall back safely", () => {
+    expect(__test.normalizeLocale("en-GB")).toBe("en-GB");
+    expect(__test.normalizeLocale("fr-FR")).toBe("fr");
+    expect(__test.normalizeLocale("ko-KR")).toBe("en");
+    expect(__test.normalizeTimezone("Asia/Seoul")).toBe("Asia/Seoul");
+    expect(__test.normalizeTimezone("Not/AZone")).toBe("UTC");
   });
 
   test("column headers preserve order and de-duplicate deterministically", () => {
@@ -136,6 +148,89 @@ describe("SpreadUI runtime boundary", () => {
 
     expect(changed).toEqual(["after"]);
     expect(result).toEqual({ updatedCount: 1, skippedCount: 1, failedCount: 0 });
+  });
+
+  test("restored workbooks retain datasource write-back mapping", () => {
+    const changed = [];
+    const result = __test.writeBack(
+      {
+        source: "saved",
+        items: [{ id: "row-1" }],
+        columns: [
+          {
+            writeBack: true,
+            formula: "",
+            valueAttribute: {
+              get: () => ({
+                status: "available",
+                value: "before",
+                readOnly: false,
+                setValue: value => changed.push(value),
+              }),
+            },
+          },
+        ],
+        model: { getCellContent: () => "after" },
+      },
+      false,
+    );
+
+    expect(changed).toEqual(["after"]);
+    expect(result).toEqual({ updatedCount: 1, skippedCount: 0, failedCount: 0 });
+  });
+
+  test("workbooks without a datasource mapping never write back", () => {
+    const result = __test.writeBack(
+      {
+        source: "imported",
+        items: [],
+        columns: [],
+        model: {
+          getCellContent: () => {
+            throw new Error("must not be read");
+          },
+        },
+      },
+      false,
+    );
+
+    expect(result).toEqual({ updatedCount: 0, skippedCount: 0, failedCount: 0 });
+  });
+
+  test("import cancellation settles once without loading a workbook", () => {
+    const originalDocument = globalThis.document;
+    const listeners = new Map();
+    const input = {
+      accept: "",
+      files: [],
+      style: {},
+      type: "",
+      addEventListener: (name, listener) => listeners.set(name, listener),
+      click: () => {
+        listeners.get("cancel")?.();
+        listeners.get("change")?.();
+      },
+      remove: () => undefined,
+    };
+    globalThis.document = {
+      body: { appendChild: () => undefined },
+      createElement: () => input,
+    };
+    const successes = [];
+    const failures = [];
+
+    try {
+      import_workbook(
+        { locale: "en-US" },
+        workbook => successes.push(workbook),
+        reason => failures.push(reason),
+      );
+    } finally {
+      globalThis.document = originalDocument;
+    }
+
+    expect(successes).toEqual([]);
+    expect(failures).toEqual(["No workbook was selected."]);
   });
 
   test("download filenames are safe and always use the IronCalc extension", () => {
