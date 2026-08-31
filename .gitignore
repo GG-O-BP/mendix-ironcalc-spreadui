@@ -1,0 +1,13 @@
+node_modules/
+build/
+dist/
+.env
+*.log
+.DS_Store
+.idea/
+.vscode/
+tests/testProject/
+coverage/
+.claude/
+src/*.js
+src/glendix_binding_ffi.mjs

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<widget id="com.ggobp.mendixironcalc.MendixIronCalc" pluginWidget="true" needsEntityContext="false"
+        offlineCapable="true" supportedPlatform="Web"
+        xmlns="http://www.mendix.com/widget/1.0/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.mendix.com/widget/1.0/ ../node_modules/mendix/custom_widget.xsd">
+    <name>IronCalc SpreadUI</name>
+    <description>Fast, practical IronCalc spreadsheet UI connected to Mendix data.</description>
+    <studioProCategory>Data containers</studioProCategory>
+    <icon/>
+    <properties>
+        <propertyGroup caption="Data">
+            <property key="dataSource" type="datasource" isList="true" required="false">
+                <caption>Rows</caption>
+                <description>Optional Mendix list data source used to populate spreadsheet rows.</description>
+            </property>
+            <property key="columns" type="object" isList="true" required="false">
+                <caption>Columns</caption>
+                <description>Ordered spreadsheet columns. Duplicate or empty headers are made unique automatically.</description>
+                <properties>
+                    <propertyGroup caption="Column">
+                        <property key="header" type="string" required="true" defaultValue="Column">
+                            <caption>Header</caption>
+                            <description>Column heading shown in the first spreadsheet row.</description>
+                        </property>
+                        <property key="valueAttribute" type="attribute" dataSource="../dataSource" required="false">
+                            <caption>Value attribute</caption>
+                            <description>Mendix attribute read into this column and optionally written back on Save.</description>
+                            <attributeTypes>
+                                <attributeType name="String"/>
+                                <attributeType name="Integer"/>
+                                <attributeType name="Long"/>
+                                <attributeType name="Decimal"/>
+                                <attributeType name="Boolean"/>
+                                <attributeType name="DateTime"/>
+                                <attributeType name="Enum"/>
+                                <attributeType name="AutoNumber"/>
+                            </attributeTypes>
+                        </property>
+                        <property key="formula" type="string" required="false" defaultValue="">
+                            <caption>Formula template</caption>
+                            <description>Optional IronCalc formula. Use {row} for the 1-based spreadsheet row, for example =C{row}*D{row}.</description>
+                        </property>
+                        <property key="writeBack" type="boolean" required="true" defaultValue="true">
+                            <caption>Write changes back</caption>
+                            <description>Write edited cells back to editable Mendix attributes when Save is pressed. Formula columns are never written back.</description>
+                        </property>
+                        <property key="width" type="integer" required="true" defaultValue="140">
+                            <caption>Width</caption>
+                            <description>Initial column width in pixels, clamped to a practical range.</description>
+                        </property>
+                    </propertyGroup>
+                </properties>
+            </property>
+            <property key="workbookState" type="attribute" required="false">
+                <caption>Workbook state</caption>
+                <description>Optional String attribute that persists the complete IronCalc workbook as base64.</description>
+                <attributeTypes>
+                    <attributeType name="String"/>
+                </attributeTypes>
+            </property>
+            <property key="emptyMode" type="enumeration" required="true" defaultValue="sample">
+                <caption>When no data is configured</caption>
+                <description>Show a useful sample workbook or start with an empty workbook.</description>
+                <enumerationValues>
+                    <enumerationValue key="sample">Practical sample</enumerationValue>
+                    <enumerationValue key="empty">Empty workbook</enumerationValue>
+                </enumerationValues>
+            </property>
+            <property key="maxRows" type="integer" required="true" defaultValue="1000">
+                <caption>Maximum rows</caption>
+                <description>Maximum Mendix rows loaded in one batch. Values are clamped between 1 and 10000.</description>
+            </property>
+        </propertyGroup>
+        <propertyGroup caption="Experience">
+            <property key="title" type="string" required="true" defaultValue="Operations workbook">
+                <caption>Title</caption>
+                <description>SpreadUI heading.</description>
+            </property>
+            <property key="description" type="string" required="false" defaultValue="Edit, calculate, persist, and reuse Mendix data in one workspace.">
+                <caption>Description</caption>
+                <description>Short guidance displayed under the title.</description>
+            </property>
+            <property key="height" type="integer" required="true" defaultValue="620">
+                <caption>Height</caption>
+                <description>Spreadsheet height in pixels, clamped between 320 and 1600.</description>
+            </property>
+            <property key="theme" type="enumeration" required="true" defaultValue="light">
+                <caption>Theme</caption>
+                <description>Visual theme for SpreadUI and the IronCalc workbook.</description>
+                <enumerationValues>
+                    <enumerationValue key="light">Light</enumerationValue>
+                    <enumerationValue key="dark">Dark</enumerationValue>
+                    <enumerationValue key="system">System</enumerationValue>
+                </enumerationValues>
+            </property>
+            <property key="readOnly" type="boolean" required="true" defaultValue="false">
+                <caption>Read only</caption>
+                <description>Hide IronCalc editing controls and prevent Mendix write-back.</description>
+            </property>
+            <property key="workbookName" type="string" required="true" defaultValue="Mendix Workbook">
+                <caption>Workbook name</caption>
+                <description>Name embedded in newly created workbooks and downloaded files.</description>
+            </property>
+            <property key="sheetName" type="string" required="true" defaultValue="Mendix Data">
+                <caption>Sheet name</caption>
+                <description>Name of the initial data sheet.</description>
+            </property>
+            <property key="locale" type="string" required="true" defaultValue="en-US">
+                <caption>Locale</caption>
+                <description>IronCalc locale, such as en-US or ko-KR.</description>
+            </property>
+            <property key="timezone" type="string" required="true" defaultValue="UTC">
+                <caption>Time zone</caption>
+                <description>IANA time zone used by IronCalc, such as UTC or Asia/Seoul.</description>
+            </property>
+        </propertyGroup>
+        <propertyGroup caption="Actions">
+            <property key="onSave" type="action" required="false">
+                <caption>After save</caption>
+                <description>Optional action executed after workbook persistence and Mendix attribute write-back finish.</description>
+            </property>
+        </propertyGroup>
+        <propertyGroup caption="System properties">
+            <systemProperty key="Visibility"/>
+            <systemProperty key="Name"/>
+            <systemProperty key="TabIndex"/>
+        </propertyGroup>
+    </properties>
+</widget>

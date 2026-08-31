@@ -1,0 +1,76 @@
+{
+  "name": "mendix-ironcalc-spreadui",
+  "widgetName": "MendixIronCalc",
+  "version": "1.0.0",
+  "description": "Practical IronCalc spreadsheet widget for Mendix, built with Glendix 5.2.0",
+  "copyright": "© 2026 GG-O-BP and contributors.",
+  "author": "GG-O-BP",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GG-O-BP/mendix-ironcalc-spreadui.git"
+  },
+  "bugs": {
+    "url": "https://github.com/GG-O-BP/mendix-ironcalc-spreadui/issues"
+  },
+  "homepage": "https://github.com/GG-O-BP/mendix-ironcalc-spreadui#readme",
+  "engines": {
+    "node": "^22.20.0 || ^24.12.0 || >=25.0.0"
+  },
+  "packageManager": "bun@1.4.0",
+  "license": "MIT",
+  "type": "module",
+  "config": {
+    "projectPath": "./tests/testProject",
+    "mendixHost": "http://localhost:8080",
+    "developmentPort": 3000
+  },
+  "packagePath": "com.ggobp",
+  "scripts": {
+    "build": "gleam run -m glendix/build --runtime bun",
+    "check": "gleam check",
+    "dev": "gleam run -m glendix/dev --runtime bun",
+    "install:bindings": "gleam run -m glendix/install --runtime bun",
+    "test": "gleam test --runtime bun",
+    "test:js": "bun test test/*.test.mjs"
+  },
+  "dependencies": {
+    "@ironcalc/wasm": "0.8.4",
+    "@ironcalc/workbook": "0.8.3",
+    "i18next": "26.3.1",
+    "lucide-react": "1.17.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-i18next": "16.5.8"
+  },
+  "devDependencies": {
+    "@mendix/pluggable-widgets-tools": "11.12.1",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.5"
+  },
+  "resolutions": {
+    "@ironcalc/wasm": "0.8.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.5"
+  },
+  "overrides": {
+    "@ironcalc/wasm": "0.8.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.5"
+  },
+  "allowScripts": {
+    "@parcel/watcher": true,
+    "@swc/core": true,
+    "core-js": true,
+    "unrs-resolver": true
+  },
+  "trustedDependencies": [
+    "@parcel/watcher",
+    "@swc/core",
+    "core-js",
+    "unrs-resolver"
+  ]
+}
