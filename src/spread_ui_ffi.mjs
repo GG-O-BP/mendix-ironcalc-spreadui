@@ -1,4 +1,5 @@
 import "@ironcalc/workbook/style.css";
+import { createElement } from "react";
 
 let initialization;
 let ironCalcModule;
@@ -26,6 +27,30 @@ function asArray(value) {
   if (Array.isArray(value)) return value;
   if (value && typeof value.toArray === "function") return value.toArray();
   return [];
+}
+
+function SpreadUiHost({ props, render }) {
+  return render(props);
+}
+
+export function props_revision(props) {
+  const datasource = props?.dataSource;
+  const itemCount = asArray(datasource?.items).length;
+  const columnCount = asArray(props?.columns).length;
+  const phase = !datasource
+    ? "none"
+    : datasource.status === "available" || itemCount > 0
+      ? "ready"
+      : "pending";
+  return `${phase}:${itemCount}:${columnCount}`;
+}
+
+export function keyed_host(props, revision, render) {
+  return createElement(SpreadUiHost, {
+    key: revision,
+    props,
+    render,
+  });
 }
 
 function asString(value, fallback = "") {

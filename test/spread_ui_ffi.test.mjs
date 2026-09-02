@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   __test,
   import_workbook,
+  props_revision,
   read_config,
 } from "../src/spread_ui_ffi.mjs";
 
@@ -21,6 +22,21 @@ describe("SpreadUI runtime boundary", () => {
     expect(config.theme).toBe("light");
     expect(config.columns[0].header).toBe("Column 1");
     expect(config.columns[0].width).toBe(60);
+  });
+
+  test("datasource readiness changes the keyed host revision", () => {
+    const loading = props_revision({
+      dataSource: { status: "loading", items: [] },
+      columns: [{ header: "Item" }],
+    });
+    const available = props_revision({
+      dataSource: { status: "available", items: [{ id: "row-1" }] },
+      columns: [{ header: "Item" }],
+    });
+
+    expect(loading).toBe("pending:0:1");
+    expect(available).toBe("ready:1:1");
+    expect(available).not.toBe(loading);
   });
 
   test("unsupported locale and timezone settings fall back safely", () => {
